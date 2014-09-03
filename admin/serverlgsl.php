@@ -59,7 +59,7 @@ if (query_numrows( "SELECT `name` FROM `".DBPREFIX."server` WHERE `serverid` = '
 
 $rows = query_fetch_assoc( "SELECT `gameid`, `name`, `status`, `panelstatus` FROM `".DBPREFIX."server` WHERE `serverid` = '".$serverid."' LIMIT 1" );
 $type = query_fetch_assoc( "SELECT `querytype` FROM `".DBPREFIX."game` WHERE `gameid` = '".$rows['gameid']."' LIMIT 1");
-
+$pydio = query_fetch_assoc( "SELECT `value` FROM `".DBPREFIX."config` WHERE `setting` = 'pydio' LIMIT 1" );
 
 include("./bootstrap/header.php");
 
@@ -85,8 +85,9 @@ if ($rows['panelstatus'] == 'Started')
 
 ?>
 
-				<li><a href="#" onclick="ajxp()"><?php echo T_('WebFTP'); ?></a></li>
+				<?php if($pydio['value'] == '0'){ ?><li><a href="#" onclick="ajxp()"><?php echo T_('WebFTP'); ?></a></li><?php } ?>
 				<li><a href="serverlog.php?id=<?php echo $serverid; ?>"><?php echo T_('Activity Logs'); ?></a></li>
+                <?php if($rows['panelstatus'] != 'Started'){ ?><li><a href="serverconfig.php?id=<?php echo $serverid; ?>"><?php echo T_('Server config'); ?></a></li><?php } ?>
 			</ul>
 <?php
 

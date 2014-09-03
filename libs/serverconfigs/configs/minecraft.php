@@ -87,7 +87,7 @@ function java_properties_write($data){
 	
 	foreach($data as $key => $value)
 	{
-		if(in_array($key, $forbidden['java_properties'])	== TRUE)
+		if(in_array($key, $forbidden['java_properties']) == TRUE)
 			return -1;
 		if(isset($maxvals['java_properties'][$key]))
 		{

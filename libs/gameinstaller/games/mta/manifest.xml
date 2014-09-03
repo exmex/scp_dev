@@ -49,5 +49,10 @@ NOTE: Resource files are not downloaded !
 			<rsync_u>mods/deathmatch</rsync_u>
 			<chmodx>mta-server</chmodx>
 		</updategame>
+		
+		<configs>
+			<file autocreate="false" parser="mta_xml">mods/deathmatch/mtaserver.conf</file>
+			<file autocreate="false" parser="mta_xml">mods/deathmatch/acl.xml</file>
+		</configs>
 	</actions>
 </game>

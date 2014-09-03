@@ -36,7 +36,7 @@ $type = query_fetch_assoc( "SELECT `querytype` FROM `".DBPREFIX."game` WHERE `ga
 $game = query_fetch_assoc( "SELECT * FROM `".DBPREFIX."game` WHERE `gameid` = '".$rows['gameid']."' LIMIT 1" );
 $group = query_fetch_assoc( "SELECT `name` FROM `".DBPREFIX."group` WHERE `groupid` = '".$rows['groupid']."' LIMIT 1" );
 $logs = mysql_query( "SELECT * FROM `".DBPREFIX."log` WHERE `serverid` = '".$serverid."' ORDER BY `logid` DESC LIMIT 5" );
-$group = query_fetch_assoc( "SELECT `value` FROM `".DBPREFIX."config` WHERE `setting` = 'pydio' LIMIT 1" );
+$pydio = query_fetch_assoc( "SELECT `value` FROM `".DBPREFIX."config` WHERE `setting` = 'pydio' LIMIT 1" );
 
 if ($rows['panelstatus'] == 'Started')
 {
@@ -77,8 +77,8 @@ include("./bootstrap/notifications.php");
 				<?php if($type['querytype'] != 'none'){ ?><li><a href="serverlgsl.php?id=<?php echo $serverid; ?>">LGSL</a></li><?php } ?>
 				<?php if($rows['panelstatus'] == 'Started'){ ?><li><a href="utilitiesrcontool.php?serverid=<?php echo $serverid; ?>"><?php echo T_('RCON Tool'); ?></a></li><?php } ?>
 				<?php if($pydio['value'] == '0'){ ?><li><a href="#" onclick="ajxp()"><?php echo T_('WebFTP'); ?></a></li><?php } ?>
-				<?php if($rows['panelstatus'] != 'Started'){ ?><li><a href="serverlog.php?id=<?php echo $serverid; ?>"><?php echo T_('Activity Logs'); ?></a></li><?php } ?>
-                <li class="active"><a href="serverconfig.php?id=<?php echo $serverid; ?>"><?php echo T_('Server config'); ?></a></li>
+				<li><a href="serverlog.php?id=<?php echo $serverid; ?>"><?php echo T_('Activity Logs'); ?></a></li>
+                <?php if($rows['panelstatus'] != 'Started'){ ?><li class="active"><a href="serverconfig.php?id=<?php echo $serverid; ?>"><?php echo T_('Server config'); ?></a></li><?php } ?>
 			</ul>
 			<div class="row-fluid">
 <?php
@@ -115,41 +115,52 @@ switch($task)
                         <input type="hidden" name="task" value="edit" />
                         <input type="hidden" name="id" value="<?php echo urlencode($serverid); ?>" />
                         <input type="hidden" name="config" value="<?php echo urlencode($_GET['config']); ?>" />
-                        <table class="table table-striped table-bordered table-condensed">
                         <?php
 							$parser = $actions['configs']['file'][$_GET['config']]['attributes']['parser'];
 							$config = call_user_func($parser, $content);
-							foreach($config as $key => $value)
+							if(is_array($config))
 							{
-								if(is_array($maxvals[$parser][$key]))
+								echo "<table class=\"table table-striped table-bordered table-condensed\">";
+								foreach($config as $key => $value)
 								{
-									echo "<tr><td><label>".$key."</label></td>";
-									echo "<td><select name=\"data[".$key."]\">";
-									foreach($maxvals[$parser][$key] as $val)
+									if(is_array($maxvals[$parser][$key]))
 									{
-										echo "<option value=\"".$val."\"";
-										if(strcmp($val, $value) == 0) echo " selected ";
-										echo ">".$val."</option>";
+										echo "<tr><td><label>".$key."</label></td>";
+										echo "<td><select name=\"data[".$key."]\">";
+										foreach($maxvals[$parser][$key] as $val)
+										{
+											echo "<option value=\"".$val."\"";
+											if(strcmp($val, $value) == 0) echo " selected ";
+											echo ">".$val."</option>";
+										}
+										echo "<select></td></tr>";
+									}elseif(is_string($maxvals[$parser][$key]) && strcmp($maxvals[$parser][$key],"textarea") == 0){
+										echo "</table><table class=\"table table-striped table-bordered table-condensed\">";
+										echo "<tr><td><label>".$key."</label></td></tr>";
+										echo "<tr><td><textarea style=\"width:98%;\" rows=\"5\" name=\"data[".$key."]\">".$value."</textarea></td></tr>";
+										echo "</table>";
+									}elseif(is_string($maxvals[$parser][$key])){
+										echo "<tr><td><label>".$key."</label></td>";
+										echo "<td><input type=\"text\" name=\"data[".$key."]\" value=\"".$value."\" maxlength=\"".strlen($maxvals[$parser][$key])."\"/></td></tr>";
+									}elseif(is_int($maxvals[$parser][$key])){
+										echo "<tr><td><label>".$key."</label></td>";
+										echo "<td><input type=\"number\" name=\"data[".$key."]\" value=\"".$value."\" max=\"".$maxvals[$parser][$key]."\"/></td></tr>";
 									}
-									echo "<select></td></tr>";
 								}
-							
-								if(is_string($maxvals[$parser][$key]))
-								{
-									echo "<tr><td><label>".$key."</label></td>";
-									echo "<td><input type=\"text\" name=\"data[".$key."]\" value=\"".$value."\" maxlength=\"".strlen($maxvals[$parser][$key])."\"/></td></tr>";
-								}
-							
-								if(is_int($maxvals[$parser][$key]))
-								{
-									echo "<tr><td><label>".$key."</label></td>";
-									echo "<td><input type=\"number\" name=\"data[".$key."]\" value=\"".$value."\" max=\"".$maxvals[$parser][$key]."\"/></td></tr>";
-								}
+							}else{
+						?>
+                        	<table class="table table-striped table-bordered table-condensed\">
+                        	<tr>
+                            	<td><textarea style="width:98%;" rows="50" name="data"><?php echo $config; ?></textarea></td>
+                            </tr>
+                            </table>
+                            <table class="table table-striped table-bordered table-condensed">
+                        <?php
 							}
 						?>
                         	<tr>
                             	<td></td>
-                            	<td><button name="submit" type="submit" class="btn btn-success">Save</button></td>
+                            	<td style="text-align:right;"><button name="submit" type="submit" class="btn btn-success">Save</button></td>
                             </tr>
                         </table>
                         </form>
