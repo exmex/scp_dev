@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+ArmA : Armed Assault MANIFEST
+By warhawk3407
+Last Update: 05/05/2014
+-->
+
+<!-- Game Manifest -->
+<game>
+	<name>arma</name>
+
+	<actions>
+		<!-- Make Game Repository -->
+		<repository>
+			<!-- Download required files -->
+			<get>http://cdn.bgpanel.net/api.get.php?game=arma</get>
+			<!-- Decompress downloaded files -->
+			<untargz>arma1-linuxded-1.18-raw.tar.gz</untargz>
+
+			<!-- Additionnal Actions -->
+
+			<!-- Move all files from extracted folders to dest -->
+			<move>arma1server-1.18-raw/*, .</move>
+			<!-- Delete Downloaded Archives -->
+			<delete>arma1-linuxded-1.18-raw.tar.gz</delete>
+			<delete>arma1server-1.18-raw</delete>
+		</repository>
+
+		<!-- Install Game Server From Game Repository -->
+		<installgame>
+			<!-- Copy Game Server Files -->
+			<rsync_c></rsync_c>
+			<chmodx>server</chmodx>
+			<chmodx>armaserver</chmodx>
+		</installgame>
+
+		<!-- Update Game Server From Game Repository -->
+		<updategame>
+			<!-- Update Game Server Files -->
+			<rsync_u>basic.cfg, server.cfg, server/server.armaprofile</rsync_u>
+			<chmodx>server</chmodx>
+			<chmodx>armaserver</chmodx>
+		</updategame>
+	</actions>
+</game>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Information About BrightGamePanel Core Files -->
+<coreinfo>
+	<project>Bright Game Panel</project>
+	<package>bgp_r0-devel-beta9</package>
+	<branch>devel</branch>
+	<version>0.4.7</version>
+	<date>2013-11-24</date>
+</coreinfo>
