@@ -54,6 +54,7 @@ switch (@$task)
 		$adminTemplate = mysql_real_escape_string($_POST['adminTemplate']);
 		$clientTemplate = mysql_real_escape_string($_POST['clientTemplate']);
 		$maintenance = mysql_real_escape_string($_POST['status']);
+		$webftp = mysql_real_escape_string($_POST['pydio']);
 		###
 		//Check the inputs. Output an error if the validation failed
 		$panelNameLength = strlen($panelName);
@@ -72,6 +73,10 @@ switch (@$task)
 		if ($maintenance != '0' && $maintenance != '1')
 		{
 			$error .= T_('Invalid maintenance mode. ');
+		}
+		if ($webftp != '0' && $webftp != '1')
+		{
+			$error .= T_('Invalid pydio mode. ');
 		}
 		//---------------------------------------------------------+
 		$err = 0;
@@ -131,6 +136,7 @@ switch (@$task)
 		query_basic( "UPDATE `".DBPREFIX."config` SET `value` = '".$adminTemplate."' WHERE `setting` = 'admintemplate'" );
 		query_basic( "UPDATE `".DBPREFIX."config` SET `value` = '".$clientTemplate."' WHERE `setting` = 'clienttemplate'" );
 		query_basic( "UPDATE `".DBPREFIX."config` SET `value` = '".$maintenance."' WHERE `setting` = 'maintenance'" );
+		query_basic( "UPDATE `".DBPREFIX."config` SET `value` = '".$webftp."' WHERE `setting` = 'pydio'" );
 		###
 		$_SESSION['msg1'] = T_('Settings Updated Successfully!');
 		$_SESSION['msg2'] = T_('Your changes to the settings have been saved.');

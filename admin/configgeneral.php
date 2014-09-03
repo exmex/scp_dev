@@ -42,6 +42,7 @@ $title = T_('General Settings');
 $systemUrl = query_fetch_assoc( "SELECT `value` FROM `".DBPREFIX."config` WHERE `setting` = 'systemurl' LIMIT 1" );
 $adminTemplate = query_fetch_assoc( "SELECT `value` FROM `".DBPREFIX."config` WHERE `setting` = 'admintemplate' LIMIT 1" );
 $clientTemplate = query_fetch_assoc( "SELECT `value` FROM `".DBPREFIX."config` WHERE `setting` = 'clienttemplate' LIMIT 1" );
+$pydio = query_fetch_assoc( "SELECT `value` FROM `".DBPREFIX."config` WHERE `setting` = 'pydio' LIMIT 1" );
 
 
 include("./bootstrap/header.php");
@@ -77,7 +78,7 @@ if (MAINTENANCE	== '1') // On
 	echo 'active';
 }
 //---------------------------------------------------------+
-?>" onclick="switchRadio();return false;"><?php echo T_('On'); ?></a>
+?>" onclick="switchRadio('status');return false;"><?php echo T_('On'); ?></a>
 							<a class="btn btn-primary <?php
 //---------------------------------------------------------+
 if (MAINTENANCE	== '0') // Off
@@ -85,7 +86,7 @@ if (MAINTENANCE	== '0') // Off
 	echo 'active';
 }
 //---------------------------------------------------------+
-?>" onclick="switchRadio();return false;"><?php echo T_('Off'); ?></a>
+?>" onclick="switchRadio('status');return false;"><?php echo T_('Off'); ?></a>
 						</div>
 						<div class="collapse">
 							<label class="radio">
@@ -115,6 +116,25 @@ if (MAINTENANCE	== '0') // Off
 								<?php echo T_('Only'); ?> <b><?php echo T_('Super Administrators'); ?></b> <?php echo T_('will be able to log into the panel,'); ?>
 								<i><?php echo T_('Limited / Full Administrators'); ?></i> <?php echo T_('and'); ?> <i><?php echo T_('Clients'); ?></i> <?php echo T_('will be redirected to a page showing that your panel is down for maintenance.'); ?>
 								<b><?php echo T_('NOTE: CRON JOB IS DISABLED IN THIS MODE!'); ?></b>
+							</span>
+						</div>
+                        
+						<label><?php echo T_('Disable WebFTP'); ?></label>
+						<div class="btn-group" data-toggle="buttons-radio" style="margin-bottom: 5px;">
+							<a class="btn btn-primary <?php if ($pydio['value'] == '1') echo 'active'; ?>" onclick="switchRadio('pydio');return false;"><?php echo T_('On'); ?></a>
+							<a class="btn btn-primary <?php if ($pydio['value'] == '0')	echo 'active'; ?>" onclick="switchRadio('pydio');return false;"><?php echo T_('Off'); ?></a>
+						</div>
+						<div class="collapse">
+							<label class="radio">
+								<input id="pydio0" type="radio" value="1" name="pydio" <?php if ($pydio['value'] == '1') echo "checked=\"\""; ?>>
+							</label>
+							<label class="radio">
+								<input id="pydio1" type="radio" value="0" name="pydio" <?php if ($pydio['value'] == '0') echo "checked=\"\""; ?>>
+							</label>
+						</div>
+						<div>
+							<span class="help-block">
+								<?php echo T_('Disable the WebFTP pydio.'); ?>
 							</span>
 						</div>
 					<label>Admin Template</label>
@@ -172,10 +192,10 @@ foreach ($global_templates as $key => $value)
 				</form>
 			</div>
 			<script language="javascript" type="text/javascript">
-			function switchRadio()
+			function switchRadio(stat)
 			{
-				var statusActive = document.getElementById('status0');
-				var statusInactive = document.getElementById('status1');
+				var statusActive = document.getElementById(stat + '0');
+				var statusInactive = document.getElementById(stat + '1');
 				<!-- -->
 				var active = statusActive.getAttribute('checked');
 				var inactive = statusInactive.getAttribute('checked');
