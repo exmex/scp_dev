@@ -33,5 +33,9 @@ Last Update: 05/05/2014
 			<rsync_u>server.properties</rsync_u>
 			<chmodx>minecraft_server.1.7.9.jar</chmodx>
 		</updategame>
+		
+		<configs>
+			<file>server.properties</file>
+		</configs>
 	</actions>
 </game>

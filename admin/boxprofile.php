@@ -57,7 +57,7 @@ if (query_numrows( "SELECT `name` FROM `".DBPREFIX."box` WHERE `boxid` = '".$box
 
 
 $rows = query_fetch_assoc( "SELECT * FROM `".DBPREFIX."box` WHERE `boxid` = '".$boxid."' LIMIT 1" );
-
+$pydio = query_fetch_assoc("SELECT `value` FROM `".DBPREFIX."config` WHERE `setting` = 'pydio' LIMIT 1");
 
 include("./bootstrap/header.php");
 
@@ -76,7 +76,7 @@ include("./bootstrap/notifications.php");
 				<li><a href="boxserver.php?id=<?php echo $boxid; ?>"><?php echo T_('Servers'); ?></a></li>
 				<li><a href="boxchart.php?id=<?php echo $boxid; ?>"><?php echo T_('Charts'); ?></a></li>
 				<li><a href="boxgamefile.php?id=<?php echo $boxid; ?>"><?php echo T_('Game File Repositories'); ?></a></li>
-				<li><a href="#" onclick="ajxp()"><?php echo T_('WebFTP'); ?></a></li>
+				<?php if($pydio['value'] == '0'){ ?><li><a href="#" onclick="ajxp()"><?php echo T_('WebFTP'); ?></a></li><?php } ?>
 				<li><a href="boxlog.php?id=<?php echo $boxid; ?>"><?php echo T_('Activity Logs'); ?></a></li>
 			</ul>
 			<div class="well">

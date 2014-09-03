@@ -222,6 +222,7 @@ class GameInstaller {
 				$this->actions['makeRepo'] = $arr['game'][0]['value']['actions'][0]['value']['repository'][0]['value'];
 				$this->actions['installGame'] = $arr['game'][0]['value']['actions'][0]['value']['installgame'][0]['value'];
 				$this->actions['updateGame'] = $arr['game'][0]['value']['actions'][0]['value']['updategame'][0]['value'];
+				$this->actions['configs'] = $arr['game'][0]['value']['actions'][0]['value']['configs'][0]['value'];
 
 				$xml->close( );
 
