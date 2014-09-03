@@ -39,6 +39,8 @@ require("./include.php");
 
 $title = T_('WebFTP');
 
+$pydio = query_fetch_assoc( "SELECT `value` FROM `".DBPREFIX."config` WHERE `setting` = 'pydio' LIMIT 1" );
+
 
 //---------------------------------------------------------+
 
@@ -76,11 +78,20 @@ switch ($step)
 ?>
 			<div class="well">
 				<div style="text-align: center; margin-top: 19px;">
+                <?php
+				if($pydio['value'] == '1')
+				{
+					echo T_('Pydio was disabled');
+				}else{
+				?>
 					<button href="#" onclick="ajxp()" class="btn btn-primary btn-large">
 						<img src="../bootstrap/img/ajxp.png" alt="AJXP"><br />
 						<hr>
 						<?php echo T_('New WebFTP Session'); ?>
 					</button>
+                <?php
+                }
+                ?>
 				</div>
 				<div style="text-align: center; margin-top: 19px;">
 					<ul class="pager">
@@ -109,6 +120,16 @@ switch ($step)
 	case 'webftp':
 
 		// Redirect User to AJXP
+		
+		if($pydio['value'] == '1')
+		{
+			$_SESSION['msg1'] = T_('Session cannot be started!');
+			$_SESSION['msg2'] = T_('Pydio is diabled!');
+			$_SESSION['msg-type'] = 'error';
+			unset($error);
+			header( "Location: utilitieswebftp.php" );
+			die();
+		}
 
 		$pageURL = 'http';
 
