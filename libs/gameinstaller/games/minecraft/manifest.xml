@@ -14,7 +14,8 @@ Last Update: 05/05/2014
 		<!-- Make Game Repository -->
 		<repository>
 			<!-- Download required files -->
-			<get>https://s3.amazonaws.com/Minecraft.Download/versions/1.7.9/minecraft_server.1.7.9.jar</get>
+			<get>https://s3.amazonaws.com/Minecraft.Download/versions/1.7.10/minecraft_server.1.7.10.jar</get>
+			<get>https://s3.amazonaws.com/Minecraft.Download/versions/1.8/minecraft_server.1.8.jar</get>
 			<get>http://dl.bukkit.org/latest-rb/craftbukkit.jar</get>
 			<!-- Additionnal Actions -->
 			<!-- Nothing to do! -->
@@ -24,18 +25,18 @@ Last Update: 05/05/2014
 		<installgame>
 			<!-- Copy Game Server Files -->
 			<rsync_c></rsync_c>
-			<chmodx>minecraft_server.1.7.9.jar</chmodx>
+			<chmodx>minecraft_server.1.7.10.jar</chmodx>
 		</installgame>
 
 		<!-- Update Game Server From Game Repository -->
 		<updategame>
 			<!-- Update Game Server Files -->
 			<rsync_u>server.properties</rsync_u>
-			<chmodx>minecraft_server.1.7.9.jar</chmodx>
+			<chmodx>minecraft_server.1.7.10.jar</chmodx>
 		</updategame>
 		
 		<configs>
-			<file>server.properties</file>
+			<file autocreate="true" parser="java_properties">server.properties</file>
 		</configs>
 	</actions>
 </game>

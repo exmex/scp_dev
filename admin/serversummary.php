@@ -120,6 +120,7 @@ if ($rows['panelstatus'] == 'Started')
 
 				<li><a href="#" onclick="ajxp()"><?php echo T_('WebFTP'); ?></a></li>
 				<li><a href="serverlog.php?id=<?php echo $serverid; ?>"><?php echo T_('Activity Logs'); ?></a></li>
+                <?php if($rows['panelstatus'] != 'Started'){ ?><li><a href="serverlog.php?id=<?php echo $serverid; ?>"><?php echo T_('Activity Logs'); ?></a></li><?php } ?>
 			</ul>
 <?php
 

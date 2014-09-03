@@ -12,10 +12,11 @@ $return = 'serverconfig.php?id='.urlencode($serverid);
 
 require("../configuration.php");
 require("./include.php");
-require_once("../includes/func.ssh2.inc.php");
 require_once("../libs/phpseclib/SFTP.php");
 require_once("../libs/phpseclib/Crypt/AES.php");
 require_once("../libs/gameinstaller/gameinstaller.php");
+
+require_once("../libs/serverconfigs/serverconfigs.php");
 
 
 $title = T_('Server Config');
@@ -35,19 +36,20 @@ $type = query_fetch_assoc( "SELECT `querytype` FROM `".DBPREFIX."game` WHERE `ga
 $game = query_fetch_assoc( "SELECT * FROM `".DBPREFIX."game` WHERE `gameid` = '".$rows['gameid']."' LIMIT 1" );
 $group = query_fetch_assoc( "SELECT `name` FROM `".DBPREFIX."group` WHERE `groupid` = '".$rows['groupid']."' LIMIT 1" );
 $logs = mysql_query( "SELECT * FROM `".DBPREFIX."log` WHERE `serverid` = '".$serverid."' ORDER BY `logid` DESC LIMIT 5" );
+$group = query_fetch_assoc( "SELECT `value` FROM `".DBPREFIX."config` WHERE `setting` = 'pydio' LIMIT 1" );
+
+if ($rows['panelstatus'] == 'Started')
+{
+	$_SESSION['msg1'] = T_('Server is started!');
+	$_SESSION['msg2'] = T_('The configs can only be changed if the server is not running!');
+	$_SESSION['msg-type'] = 'error';
+	header( "Location: index.php");
+	die();	
+}
 
 $aes = new Crypt_AES();
 $aes->setKeyLength(256);
 $aes->setKey(CRYPT_KEY);
-
-// Get SSH2 Object OR ERROR String
-$ssh = newNetSSH2($box['ip'], $box['sshport'], $box['login'], $aes->decrypt($box['password']));
-if (!is_object($ssh))
-{
-	$_SESSION['msg1'] = T_('Connection Error!');
-	$_SESSION['msg2'] = $ssh;
-	$_SESSION['msg-type'] = 'error';
-}
 
 $sftp = new Net_SFTP($box['ip'], $box['sshport']);
 if (!$sftp->login($box['login'], $aes->decrypt($box['password'])))
@@ -59,7 +61,7 @@ if (!$sftp->login($box['login'], $aes->decrypt($box['password'])))
 	die();
 }
 
-$gameInstaller = new GameInstaller( $ssh, $sftp );
+$gameInstaller = new GameInstaller( $sftp );
 
 $gameInstaller->setGame($game['game']);
 $gameInstaller->setGameServerPath(dirname($rows['path']));
@@ -67,66 +69,15 @@ $actions = $gameInstaller->actions;
 
 include("./bootstrap/header.php");
 include("./bootstrap/notifications.php");
-
-/* ----------------------------------------- Config parsers ------------------------------------------ */
-function java_properties($txtProperties) {
-	$forbidden = array(
-		"online-mode",
-		"server-ip",
-		"level-name",
-		"query.port",
-		"debug",
-		"max-players",
-		"rcon.port",
-		"enable-rcon",
-		"rcon.password",
-		"enable-query",
-	);
-	$result = array();
-	
-	$lines = explode("\n", $txtProperties);
-	$key = "";
-	
-	$isWaitingOtherLine = false;
-	foreach($lines as $i=>$line) {
-		if(empty($line) || (!$isWaitingOtherLine && strpos($line,"#") === 0)) continue;
-	
-		if(!$isWaitingOtherLine) {
-			$key = substr($line,0,strpos($line,'='));
-			$value = substr($line,strpos($line,'=') + 1, strlen($line));
-		}else{
-			$value .= $line;
-		}
-
-		if(strrpos($value,"\\") === strlen($value)-strlen("\\")) {
-			$value = substr($value, 0, strlen($value)-1)."\n";
-			$isWaitingOtherLine = true;
-		}else{
-			$isWaitingOtherLine = false;
-		}
-	
-		if(in_array($key, $forbidden) == TRUE) continue;
-	
-		$result[$key] = $value;
-		unset($lines[$i]);
-	}
-	ksort($result);
-	return $result;
-}
-/* ----------------------------------------- Config parsers ------------------------------------------ */
 ?>
 			<ul class="nav nav-tabs">
 				<li><a href="serversummary.php?id=<?php echo $serverid; ?>"><?php echo T_('Summary'); ?></a></li>
 				<li><a href="serverprofile.php?id=<?php echo $serverid; ?>"><?php echo T_('Profile'); ?></a></li>
 				<li><a href="servermanage.php?id=<?php echo $serverid; ?>"><?php echo T_('Manage'); ?></a></li>
-<?php
-if ($type['querytype'] != 'none')
-	echo "\t\t\t\t<li><a href=\"serverlgsl.php?id=".$serverid."\">LGSL</a></li>";
-if ($rows['panelstatus'] == 'Started')
-	echo "\t\t\t\t<li><a href=\"utilitiesrcontool.php?serverid=".$serverid."\">".T_('RCON Tool')."</a></li>";
-?>
-				<li><a href="#" onclick="ajxp()"><?php echo T_('WebFTP'); ?></a></li>
-				<li><a href="serverlog.php?id=<?php echo $serverid; ?>"><?php echo T_('Activity Logs'); ?></a></li>
+				<?php if($type['querytype'] != 'none'){ ?><li><a href="serverlgsl.php?id=<?php echo $serverid; ?>">LGSL</a></li><?php } ?>
+				<?php if($rows['panelstatus'] == 'Started'){ ?><li><a href="utilitiesrcontool.php?serverid=<?php echo $serverid; ?>"><?php echo T_('RCON Tool'); ?></a></li><?php } ?>
+				<?php if($pydio['value'] == '0'){ ?><li><a href="#" onclick="ajxp()"><?php echo T_('WebFTP'); ?></a></li><?php } ?>
+				<?php if($rows['panelstatus'] != 'Started'){ ?><li><a href="serverlog.php?id=<?php echo $serverid; ?>"><?php echo T_('Activity Logs'); ?></a></li><?php } ?>
                 <li class="active"><a href="serverconfig.php?id=<?php echo $serverid; ?>"><?php echo T_('Server config'); ?></a></li>
 			</ul>
 			<div class="row-fluid">
@@ -135,14 +86,14 @@ $task = (isset($_GET['task'])) ? $_GET['task'] : "";
 switch($task)
 {
 	case 'edit':
-	if(!isset($actions['configs']['file'][$_GET['config']]['value']) || empty($actions['configs']['file'][$_GET['config']]['value']))
-	{
-		$_SESSION['msg1'] = T_('Config file not found!');
-		$_SESSION['msg2'] = "This config file is not part of our list";
-		$_SESSION['msg-type'] = 'error';
-		header("Location: serverconfig.php?id=".urlencode($serverid));
-		die();
-	}
+		if(!isset($actions['configs']['file'][$_GET['config']]['value']) || empty($actions['configs']['file'][$_GET['config']]['value']))
+		{
+			$_SESSION['msg1'] = T_('Config file not found!');
+			$_SESSION['msg2'] = "This config file is not part of our list";
+			$_SESSION['msg-type'] = 'error';
+			header("Location: serverconfig.php?id=".urlencode($serverid));
+			die();
+		}
 ?>
 				<div class="span6 offset3">
 					<div class="well">
@@ -160,23 +111,80 @@ switch($task)
                         <?php
 						}else{
 						?>
+                        <form method="post" action="serverconfigprocess.php">
+                        <input type="hidden" name="task" value="edit" />
+                        <input type="hidden" name="id" value="<?php echo urlencode($serverid); ?>" />
+                        <input type="hidden" name="config" value="<?php echo urlencode($_GET['config']); ?>" />
                         <table class="table table-striped table-bordered table-condensed">
                         <?php
-							$config = call_user_func($actions['configs']['file'][$_GET['config']]['attributes']['parser'], $content);
+							$parser = $actions['configs']['file'][$_GET['config']]['attributes']['parser'];
+							$config = call_user_func($parser, $content);
 							foreach($config as $key => $value)
 							{
-								if(strpos($key, "port") !== FALSE || strpos($key, "ip") !== FALSE) continue;
-							?>
-                            	<tr>
-                                	<td><label><?php echo $key; ?></label></td>
-	                                <td><input type="text" value="<?php echo $value; ?>" /></td>
-                                </tr>
-                            <?php
+								if(is_array($maxvals[$parser][$key]))
+								{
+									echo "<tr><td><label>".$key."</label></td>";
+									echo "<td><select name=\"data[".$key."]\">";
+									foreach($maxvals[$parser][$key] as $val)
+									{
+										echo "<option value=\"".$val."\"";
+										if(strcmp($val, $value) == 0) echo " selected ";
+										echo ">".$val."</option>";
+									}
+									echo "<select></td></tr>";
+								}
+							
+								if(is_string($maxvals[$parser][$key]))
+								{
+									echo "<tr><td><label>".$key."</label></td>";
+									echo "<td><input type=\"text\" name=\"data[".$key."]\" value=\"".$value."\" maxlength=\"".strlen($maxvals[$parser][$key])."\"/></td></tr>";
+								}
+							
+								if(is_int($maxvals[$parser][$key]))
+								{
+									echo "<tr><td><label>".$key."</label></td>";
+									echo "<td><input type=\"number\" name=\"data[".$key."]\" value=\"".$value."\" max=\"".$maxvals[$parser][$key]."\"/></td></tr>";
+								}
 							}
 						?>
-                        <textarea style="width:100%;" rows="15"><?php echo $content; ?></textarea>
+                        	<tr>
+                            	<td></td>
+                            	<td><button name="submit" type="submit" class="btn btn-success">Save</button></td>
+                            </tr>
                         </table>
+                        </form>
                         <?php } ?>
+                    </div>
+				</div>
+<?php
+	break;
+	
+	case 'reset':
+		if(!isset($actions['configs']['file'][$_GET['config']]['value']) || empty($actions['configs']['file'][$_GET['config']]['value']))
+		{
+			$_SESSION['msg1'] = T_('Config file not found!');
+			$_SESSION['msg2'] = "This config file is not part of our list";
+			$_SESSION['msg-type'] = 'error';
+			header("Location: serverconfig.php?id=".urlencode($serverid));
+			die();
+		}
+?>
+				<div class="span6 offset3">
+					<div class="well">
+						<div style="text-align: center; margin-bottom: 5px;">
+							<span class="label label-info"><?php echo T_('Reset ') . $actions['configs']['file'][$_GET['config']]['value']; ?></span>
+						</div>
+                        <form method="post" action="serverconfigprocess.php">
+						<input type="hidden" name="task" value="reset" />
+                        <input type="hidden" name="id" value="<?php echo urlencode($serverid); ?>" />
+                        <input type="hidden" name="config" value="<?php echo urlencode($_GET['config']); ?>" />
+                        <table class="table table-striped table-bordered table-condensed">
+                        	<tr>
+                            	<td>Are you sure you want to reset the config '<?php echo $actions['configs']['file'][$_GET['config']]['value']; ?>'</td>
+                            	<td><button name="submit" type="submit" class="btn btn-success">Yes</button></td>
+                            </tr>
+                        </table>
+                        </form>
                     </div>
 				</div>
 <?php
