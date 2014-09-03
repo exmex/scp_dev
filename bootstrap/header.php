@@ -34,7 +34,7 @@ if (!defined('LICENSE'))
 	exit('Access Denied');
 }
 
-
+$pydio = query_fetch_assoc( "SELECT `value` FROM `".DBPREFIX."config` WHERE `setting` = 'pydio' LIMIT 1" );
 ?>
 <!DOCTYPE html>
 <html lang="<?php
@@ -186,7 +186,7 @@ if ($page != 'login')
 								</a>
 								<ul class="dropdown-menu">
 									<li class="nav-header"><?php echo T_('Tools'); ?></li>
-									<li><a href="utilitieswebftp.php"><i class="icon-folder-open <?php echo formatIcon(); ?>"></i>&nbsp;<?php echo T_('WebFTP Tool'); ?></a></li>
+									<?php if($pydio['value'] == '0'){ ?><li><a href="utilitieswebftp.php"><i class="icon-folder-open <?php echo formatIcon(); ?>"></i>&nbsp;<?php echo T_('WebFTP Tool'); ?></a></li><?php } ?>
 									<li><a href="utilitiesrcontool.php"><i class="icon-globe <?php echo formatIcon(); ?>"></i>&nbsp;<?php echo T_('Server RCON Tool'); ?></a></li>
 									<li class="nav-header"><?php echo T_('Scripts'); ?></li>
 									<li class="dropdown-submenu">
