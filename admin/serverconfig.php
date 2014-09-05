@@ -134,11 +134,79 @@ switch($task)
 											echo ">".$val."</option>";
 										}
 										echo "<select></td></tr>";
-									}elseif(is_string($maxvals[$parser][$key]) && strcmp($maxvals[$parser][$key],"textarea") == 0){
-										echo "</table><table class=\"table table-striped table-bordered table-condensed\">";
-										echo "<tr><td><label>".$key."</label></td></tr>";
-										echo "<tr><td><textarea style=\"width:98%;\" rows=\"5\" name=\"data[".$key."]\">".$value."</textarea></td></tr>";
-										echo "</table>";
+									}elseif(strcmp($maxvals[$parser][$key], "jquery_append") == 0){
+									?>
+                                    <script type="text/javascript">
+									$(document).ready(function(){
+										$('#add<?php echo $key; ?>').on('click', function(e)
+										{
+											//var afterAdd = "<tr class='<?php echo $key; ?>elem' id='elem"+ cnt +"'><td><a href='#' onClick='return remove<?php echo $key; ?>(this, "+cnt+");'><span class='icon icon-minus'></span></a></td><td><input type='text' name='data[<?php echo $key; ?>]["+cnt+"]'/></td></tr>";
+											var cnt = document.getElementsByClassName('<?php echo $key; ?>elem').length;
+											var afterAdd = "<tr class='<?php echo $key; ?>elem' id='elem"+ cnt +"'><td><a href='#' onClick='return remove<?php echo $key; ?>(this, "+cnt+");'><span class='icon icon-minus'></span></a></td><td>";
+											<?php
+											if(is_array($value) && sizeof($value) >= 1)
+											{
+												$i = 0;
+												foreach($value[0] as $ke => $va)
+												{
+													if(is_int($va))
+													{
+														echo 'afterAdd += \'<label>'.$ke.'</label><input type="number" name="data['.$key.'][\'+cnt+\']['.$i.']"/>\';';
+													}else{
+														echo 'afterAdd += \'<label>'.$ke.'</label><input type="text" name="data['.$key.'][\'+cnt+\']['.$i.']"/>\';';
+													}
+													$i++;
+												}
+												echo 'afterAdd += "</td></tr>";';
+											}else{
+												echo 'afterAdd += \'<input type="text" name="data['.$key.']" /></td></tr>\';';
+											}
+											?>
+											$('#<?php echo $key; ?>').after(afterAdd);
+											e.preventDefault();
+											return false;
+										});
+									});
+									function remove<?php echo $key; ?>(data, id)
+									{
+										$('#elem' + id).remove();
+										return false;
+									}
+									</script>
+                                    <tr id="<?php echo $key; ?>">
+                                    	<td><label><?php echo $key; ?></label></td>
+                                        <td><a href="#" id="add<?php echo $key; ?>"><span style="float:right;" class="icon icon-plus"></span></a></td>
+                                    </tr>
+                                    <?php
+									if(is_array($value) && sizeof($value) >= 1)
+									{
+										$arr_val = array_values($value[0]);
+										if(!empty($arr_val[0]))
+										{
+											$i = 0;
+											foreach($value as $k => $v)
+											{
+												if(is_array($v))
+												{
+													echo "<tr class='".$key."elem' id='elem".$i."'><td><a href='#' onClick='return remove".$key."(this, ".$i.");'><span class='icon icon-minus'></span></a></td><td>";
+													$i2 = 0;
+													foreach($v as $ke => $va)
+													{
+														if(is_int($va)){
+															echo "<label>".$ke."</label><input type='number' name='data[".$key."][".$i."][".$i2."]' value='".$va."'/>";
+														}elseif(is_string($va)){
+															echo "<label>".$ke."</label><input type='text' name='data[".$key."][".$i."][".$i2."]' value='".$va."'/>";
+														}
+														$i2++;
+													}
+													echo "</td></tr>";
+												}else{
+													echo "<tr class='".$key."elem' id='elem".$i."'><td><a href='#' onClick='return remove".$key."(this, ".$i.");'><span class='icon icon-minus'></span></a></td><td><input type='text' name='data[".$key."][".$i."]' value='".$v."'/></td></tr>";
+												}
+												$i++;
+											}
+										}
+									}
 									}elseif(is_string($maxvals[$parser][$key])){
 										echo "<tr><td><label>".$key."</label></td>";
 										echo "<td><input type=\"text\" name=\"data[".$key."]\" value=\"".$value."\" maxlength=\"".strlen($maxvals[$parser][$key])."\"/></td></tr>";
@@ -214,7 +282,7 @@ switch($task)
 						{
 						?>
 							<tr>
-								<td width="90%"><?php echo pathinfo($value['value'], PATHINFO_FILENAME).".".pathinfo($value['value'], PATHINFO_EXTENSION); ?></td>
+								<td width="90%"><?php echo (pathinfo($value['value'], PATHINFO_EXTENSION)) ? pathinfo($value['value'], PATHINFO_FILENAME).".".pathinfo($value['value'], PATHINFO_EXTENSION) : $value['value']; ?></td>
                                 <td>
                                 	<a href="serverconfig.php?id=<?php echo $serverid; ?>&task=edit&config=<?php echo $key; ?>"><span class="icon icon-pencil" title="Edit"></span></a>
 									<a href="serverconfig.php?id=<?php echo $serverid; ?>&task=reset&config=<?php echo $key; ?>"><span class="icon icon-refresh" title="Reset"></span></a>

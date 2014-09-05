@@ -52,7 +52,7 @@ NOTE: Resource files are not downloaded !
 		
 		<configs>
 			<file autocreate="false" parser="mta_xml">mods/deathmatch/mtaserver.conf</file>
-			<file autocreate="false" parser="mta_xml">mods/deathmatch/acl.xml</file>
+			<file autocreate="false" parser="mta_acl_xml">mods/deathmatch/acl.xml</file>
 		</configs>
 	</actions>
 </game>
